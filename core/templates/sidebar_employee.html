@@ -1,0 +1,57 @@
+<!-- core/templates/sidebar_employee.html -->
+{% load static %}
+<div class="sidebar d-flex flex-column">
+    <div class="sidebar-logo">
+        <img src="{% static 'core/images/logo.png' %}" alt="Osiyo Complex">
+        <h5>Osiyo Complex</h5>
+        <p>Xodim Paneli</p>
+    </div>
+    
+    <nav class="flex-column mt-3 flex-grow-1">
+        <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" 
+           href="{% url 'dashboard' %}">
+            <i class="bi bi-house-fill"></i> Bosh sahifa
+        </a>
+        <a class="nav-link {% if 'announcements' in request.resolver_match.url_name %}active{% endif %}" 
+           href="{% url 'employee_announcements' %}">
+            <i class="bi bi-megaphone-fill"></i> E'lonlar
+        </a>
+        <a class="nav-link {% if 'rules' in request.resolver_match.url_name %}active{% endif %}" 
+           href="{% url 'employee_rules' %}">
+            <i class="bi bi-file-earmark-pdf-fill"></i> Qoidalar
+        </a>
+        <a class="nav-link {% if 'exam' in request.resolver_match.url_name %}active{% endif %}" 
+           href="{% url 'employee_exams' %}">
+            <i class="bi bi-journal-check"></i> Imtihonlar
+        </a>
+        <a class="nav-link {% if 'certificate' in request.resolver_match.url_name %}active{% endif %}" 
+           href="{% url 'employee_certificates' %}">
+            <i class="bi bi-award-fill"></i> Sertifikatlar
+        </a>
+    </nav>
+    
+    <div class="sidebar-values">
+        <h6>Qadriyatlarimiz</h6>
+        <span class="value-tag">Halollik</span>
+        <span class="value-tag">Tozalik</span>
+        <span class="value-tag">Tartib</span>
+        <span class="value-tag">Intizom</span>
+        <span class="value-tag">Mehnat</span>
+    </div>
+    
+    <div class="p-3" style="border-top: 1px solid rgba(255,255,255,0.1);">
+        {% if user.employee %}
+        <div style="padding: 10px 15px; margin-bottom: 10px; background: rgba(255,255,255,0.05); border-radius: 10px;">
+            <small style="color: var(--gold-light); display: block;">
+                <i class="bi bi-person-circle"></i> {{ user.employee.first_name }} {{ user.employee.last_name }}
+            </small>
+            <small style="color: rgba(255,255,255,0.5); font-size: 0.7rem;">
+                {{ user.employee.department.name }}
+            </small>
+        </div>
+        {% endif %}
+        <a class="nav-link" href="{% url 'logout' %}" style="color: #ff8a80;">
+            <i class="bi bi-box-arrow-left"></i> Chiqish
+        </a>
+    </div>
+</div>

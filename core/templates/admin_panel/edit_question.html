@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block title %}Savolni tahrirlash — Admin Panel{% endblock %}
+
+{% block body %}
+<div class="d-flex">
+    {% include 'sidebar_admin.html' %}
+    
+    <div class="main-content flex-grow-1">
+        <div class="page-header">
+            <h3><i class="bi bi-pencil-square"></i> Savolni tahrirlash</h3>
+            <a href="{% url 'manage_questions' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Orqaga
+            </a>
+        </div>
+        
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        <div class="card" data-aos="fade-up">
+            <div class="card-body p-4">
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <label class="form-label">Bo'lim *</label>
+                        <select name="department" class="form-select" required>
+                            {% for dept in departments %}
+                                <option value="{{ dept.id }}" {% if question.department.id == dept.id %}selected{% endif %}>
+                                    {{ dept.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label">Savol matni *</label>
+                        <textarea name="text" class="form-control" rows="3" required>{{ question.text }}</textarea>
+                    </div>
+                    
+                    <h5 class="mb-3" style="color: var(--gold-dark);">
+                        <i class="bi bi-list-ol"></i> Variantlar
+                    </h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label"><span class="badge bg-primary">A</span> Variant *</label>
+                            <input type="text" name="option_a" class="form-control" value="{{ question.option_a }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label"><span class="badge bg-primary">B</span> Variant *</label>
+                            <input type="text" name="option_b" class="form-control" value="{{ question.option_b }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label"><span class="badge bg-primary">C</span> Variant *</label>
+                            <input type="text" name="option_c" class="form-control" value="{{ question.option_c }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label"><span class="badge bg-primary">D</span> Variant *</label>
+                            <input type="text" name="option_d" class="form-control" value="{{ question.option_d }}" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label">
+                            <i class="bi bi-check-circle-fill text-success"></i> To'g'ri javob *
+                        </label>
+                        <select name="correct_answer" class="form-select" required>
+                            <option value="A" {% if question.correct_answer == 'A' %}selected{% endif %}>A varianti</option>
+                            <option value="B" {% if question.correct_answer == 'B' %}selected{% endif %}>B varianti</option>
+                            <option value="C" {% if question.correct_answer == 'C' %}selected{% endif %}>C varianti</option>
+                            <option value="D" {% if question.correct_answer == 'D' %}selected{% endif %}>D varianti</option>
+                        </select>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{% url 'manage_questions' %}" class="btn btn-outline-secondary">Bekor qilish</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Saqlash
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

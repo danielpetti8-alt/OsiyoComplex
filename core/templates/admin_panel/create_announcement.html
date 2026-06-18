@@ -1,0 +1,51 @@
+<!-- core/templates/admin_panel/create_announcement.html -->
+{% extends 'base.html' %}
+
+{% block title %}Yangi e'lon — Admin Panel{% endblock %}
+
+{% block body %}
+<div class="d-flex">
+    {% include 'sidebar_admin.html' %}
+    
+    <div class="main-content flex-grow-1">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3><i class="bi bi-megaphone"></i> Yangi e'lon</h3>
+            <a href="{% url 'manage_announcements' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Orqaga
+            </a>
+        </div>
+        
+        <div class="card">
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">E'lon sarlavhasi *</label>
+                        <input type="text" name="title" class="form-control" 
+                               placeholder="Sarlavhani kiriting" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">E'lon matni *</label>
+                        <textarea name="content" class="form-control" rows="8" 
+                                  placeholder="E'lon matnini kiriting..." required></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Rasm (ixtiyoriy)</label>
+                        <input type="file" name="image" class="form-control" accept="image/*">
+                    </div>
+                    
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{% url 'manage_announcements' %}" class="btn btn-outline-secondary btn-lg">Bekor qilish</a>
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-check-circle"></i> Nashr qilish
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

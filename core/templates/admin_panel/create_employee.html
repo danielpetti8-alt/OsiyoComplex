@@ -1,0 +1,145 @@
+<!-- core/templates/admin_panel/create_employee.html -->
+{% extends 'base.html' %}
+
+{% block title %}Yangi xodim — Admin Panel{% endblock %}
+
+{% block body %}
+<div class="d-flex">
+    {% include 'sidebar_admin.html' %}
+    
+    <div class="main-content flex-grow-1">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3><i class="bi bi-person-plus"></i> Yangi xodim yaratish</h3>
+            <a href="{% url 'manage_employees' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Orqaga
+            </a>
+        </div>
+        
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        <div class="card">
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <!-- Login ma'lumotlari -->
+                        <div class="col-12 mb-4">
+                            <h5 class="text-primary border-bottom pb-2">
+                                <i class="bi bi-key"></i> Kirish ma'lumotlari
+                            </h5>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Login (foydalanuvchi nomi) *</label>
+                            <input type="text" name="username" class="form-control" 
+                                   placeholder="masalan: ali_valiyev" required>
+                            <small class="text-muted">Xodim shu login orqali kiradi</small>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Parol *</label>
+                            <input type="password" name="password" class="form-control" 
+                                   placeholder="Kamida 8 ta belgi" required>
+                            <small class="text-muted">Xodimga berish uchun saqlab qo'ying</small>
+                        </div>
+                        
+                        <!-- Shaxsiy ma'lumotlar -->
+                        <div class="col-12 mb-4 mt-3">
+                            <h5 class="text-primary border-bottom pb-2">
+                                <i class="bi bi-person"></i> Shaxsiy ma'lumotlar
+                            </h5>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Ism *</label>
+                            <input type="text" name="first_name" class="form-control" 
+                                   placeholder="Ismni kiriting" required>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Familiya *</label>
+                            <input type="text" name="last_name" class="form-control" 
+                                   placeholder="Familiyani kiriting" required>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-bold">Yosh *</label>
+                            <input type="number" name="age" class="form-control" 
+                                   placeholder="Yosh" min="16" max="70" required>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-bold">Telefon raqami *</label>
+                            <input type="text" name="phone" class="form-control" 
+                                   placeholder="+998 XX XXX XX XX" required>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-bold">Ish staji</label>
+                            <input type="text" name="work_experience" class="form-control" 
+                                   placeholder="masalan: 2 yil">
+                        </div>
+                        
+                        <!-- Ish ma'lumotlari -->
+                        <div class="col-12 mb-4 mt-3">
+                            <h5 class="text-primary border-bottom pb-2">
+                                <i class="bi bi-building"></i> Ish ma'lumotlari
+                            </h5>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-bold">Bo'lim *</label>
+                            <select name="department" class="form-select" required>
+                                <option value="">— Tanlang —</option>
+                                {% for dept in departments %}
+                                    <option value="{{ dept.id }}">{{ dept.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-bold">Starshiy xodim</label>
+                            <select name="senior_employee" class="form-select">
+                                <option value="">— Yo'q —</option>
+                                {% for s in seniors %}
+                                    <option value="{{ s.id }}">
+                                        {{ s.first_name }} {{ s.last_name }} ({{ s.department.name }})
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3 d-flex align-items-end">
+                            <div class="form-check">
+                                <input type="checkbox" name="is_senior" class="form-check-input" id="isSenior">
+                                <label class="form-check-label fw-bold" for="isSenior">
+                                    Starshiy xodim
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{% url 'manage_employees' %}" class="btn btn-outline-secondary btn-lg">
+                            Bekor qilish
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-check-circle"></i> Saqlash
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

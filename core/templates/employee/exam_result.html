@@ -1,0 +1,112 @@
+<!-- core/templates/employee/exam_result.html -->
+{% extends 'base.html' %}
+
+{% block title %}Natija: {{ exam.title }} — Osiyo Complex{% endblock %}
+
+{% block body %}
+<div class="d-flex">
+    {% include 'sidebar_employee.html' %}
+    
+    <div class="main-content flex-grow-1">
+        <!-- Natija kartochkasi -->
+        <div class="card mb-4">
+            <div class="card-body text-center py-5">
+                {% if result.result_status == 'passed' %}
+                    <i class="bi bi-trophy text-success" style="font-size: 5rem;"></i>
+                    <h2 class="text-success mt-3">Tabriklaymiz! 🎉</h2>
+                    <p class="fs-5">Siz imtihondan muvaffaqiyatli o'tdingiz!</p>
+                {% else %}
+                    <i class="bi bi-x-circle text-danger" style="font-size: 5rem;"></i>
+                    <h2 class="text-danger mt-3">Afsuski 😞</h2>
+                    <p class="fs-5">Siz imtihondan o'ta olmadingiz.</p>
+                {% endif %}
+                
+                <div class="row justify-content-center mt-4">
+                    <div class="col-md-8">
+                        <div class="row">
+                            <div class="col-4">
+                                <div class="p-3 bg-light rounded">
+                                    <h3 class="mb-0 {% if result.result_status == 'passed' %}text-success{% else %}text-danger{% endif %}">
+                                        {{ result.score }}%
+                                    </h3>
+                                    <small class="text-muted">Umumiy ball</small>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="p-3 bg-light rounded">
+                                    <h3 class="mb-0 text-success">{{ result.correct_answers }}</h3>
+                                    <small class="text-muted">To'g'ri javob</small>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="p-3 bg-light rounded">
+                                    <h3 class="mb-0 text-danger">{{ result.wrong_answers }}</h3>
+                                    <small class="text-muted">Noto'g'ri javob</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if result.result_status == 'passed' %}
+                    <div class="mt-4">
+                        <a href="{% url 'employee_certificates' %}" class="btn btn-success btn-lg">
+                            <i class="bi bi-award"></i> Sertifikatni ko'rish
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Batafsil natija -->
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-list-check"></i> Batafsil natija</h5>
+            </div>
+            <div class="card-body">
+                {% for r in detailed_results %}
+                <div class="question-card {% if r.is_correct %}result-correct{% else %}result-wrong{% endif %}">
+                    <h5>
+                        <span class="badge {% if r.is_correct %}bg-success{% else %}bg-danger{% endif %} me-2">
+                            {{ r.number }}
+                        </span>
+                        {{ r.text }}
+                    </h5>
+                    
+                    <div class="row mt-3">
+                        {% for key, val in r.options.items %}
+                        <div class="col-md-6 mb-2">
+                            <div class="p-2 rounded 
+                                {% if key == r.correct_answer %}bg-success bg-opacity-25{% endif %}
+                                {% if key == r.user_answer and not r.is_correct %}bg-danger bg-opacity-25{% endif %}">
+                                <strong>{{ key }})</strong> {{ val }}
+                                {% if key == r.correct_answer %}
+                                    <span class="badge bg-success ms-1">To'g'ri</span>
+                                {% endif %}
+                                {% if key == r.user_answer and key != r.correct_answer %}
+                                    <span class="badge bg-danger ms-1">Sizning javobingiz</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mt-2">
+                        <small>
+                            Sizning javobingiz: <strong>{{ r.user_answer|default:"Berilmagan" }}</strong> | 
+                            To'g'ri javob: <strong>{{ r.correct_answer }}</strong>
+                        </small>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="text-center mt-4 mb-4">
+            <a href="{% url 'employee_exams' %}" class="btn btn-outline-primary btn-lg">
+                <i class="bi bi-arrow-left"></i> Imtihonlar sahifasiga qaytish
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

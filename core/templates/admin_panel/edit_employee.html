@@ -1,0 +1,113 @@
+<!-- core/templates/admin_panel/edit_employee.html -->
+{% extends 'base.html' %}
+
+{% block title %}Tahrirlash: {{ employee.first_name }} — Admin Panel{% endblock %}
+
+{% block body %}
+<div class="d-flex">
+    {% include 'sidebar_admin.html' %}
+    
+    <div class="main-content flex-grow-1">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3><i class="bi bi-pencil-square"></i> {{ employee.first_name }} {{ employee.last_name }}</h3>
+            <a href="{% url 'manage_employees' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Orqaga
+            </a>
+        </div>
+        
+        <div class="card">
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Ism *</label>
+                            <input type="text" name="first_name" class="form-control" 
+                                   value="{{ employee.first_name }}" required>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Familiya *</label>
+                            <input type="text" name="last_name" class="form-control" 
+                                   value="{{ employee.last_name }}" required>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-bold">Yosh *</label>
+                            <input type="number" name="age" class="form-control" 
+                                   value="{{ employee.age }}" min="16" max="70" required>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-bold">Telefon raqami *</label>
+                            <input type="text" name="phone" class="form-control" 
+                                   value="{{ employee.phone }}" required>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-bold">Ish staji</label>
+                            <input type="text" name="work_experience" class="form-control" 
+                                   value="{{ employee.work_experience }}">
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-bold">Bo'lim *</label>
+                            <select name="department" class="form-select" required>
+                                {% for dept in departments %}
+                                    <option value="{{ dept.id }}" 
+                                            {% if employee.department.id == dept.id %}selected{% endif %}>
+                                        {{ dept.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-bold">Starshiy xodim</label>
+                            <select name="senior_employee" class="form-select">
+                                <option value="">— Yo'q —</option>
+                                {% for s in seniors %}
+                                    <option value="{{ s.id }}"
+                                            {% if employee.senior_employee.id == s.id %}selected{% endif %}>
+                                        {{ s.first_name }} {{ s.last_name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3 d-flex align-items-end">
+                            <div class="form-check">
+                                <input type="checkbox" name="is_senior" class="form-check-input" id="isSenior"
+                                       {% if employee.is_senior %}checked{% endif %}>
+                                <label class="form-check-label fw-bold" for="isSenior">Starshiy xodim</label>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12 mb-4 mt-3">
+                            <h5 class="text-warning border-bottom pb-2">
+                                <i class="bi bi-key"></i> Parolni o'zgartirish (ixtiyoriy)
+                            </h5>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Yangi parol</label>
+                            <input type="password" name="new_password" class="form-control" 
+                                   placeholder="Bo'sh qoldirsangiz, parol o'zgarmaydi">
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{% url 'manage_employees' %}" class="btn btn-outline-secondary btn-lg">Bekor qilish</a>
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-check-circle"></i> Saqlash
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

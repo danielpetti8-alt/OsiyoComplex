@@ -1,0 +1,55 @@
+<!-- core/templates/sidebar_admin.html -->
+{% load static %}
+<div class="sidebar d-flex flex-column">
+    <!-- LOGO QISMI -->
+    <div class="sidebar-logo">
+        <img src="{% static 'core/images/logo.png' %}" alt="Osiyo Complex">
+        <h5>Osiyo Complex</h5>
+        <p>Admin Panel</p>
+    </div>
+    
+    <!-- MENYULAR -->
+    <nav class="flex-column mt-3 flex-grow-1">
+        <a class="nav-link {% if request.resolver_match.url_name == 'manage_employees' %}active{% endif %}" 
+           href="{% url 'manage_employees' %}">
+            <i class="bi bi-people-fill"></i> Xodimlar
+        </a>
+        <a class="nav-link {% if request.resolver_match.url_name == 'manage_announcements' %}active{% endif %}" 
+           href="{% url 'manage_announcements' %}">
+            <i class="bi bi-megaphone-fill"></i> E'lonlar
+        </a>
+        <a class="nav-link {% if request.resolver_match.url_name == 'manage_rules' %}active{% endif %}" 
+           href="{% url 'manage_rules' %}">
+            <i class="bi bi-file-earmark-pdf-fill"></i> Qoidalar
+        </a>
+        <a class="nav-link {% if request.resolver_match.url_name == 'manage_exams' %}active{% endif %}" 
+           href="{% url 'manage_exams' %}">
+            <i class="bi bi-journal-check"></i> Imtihonlar
+        </a>
+        <a class="nav-link {% if 'questions' in request.resolver_match.url_name %}active{% endif %}" 
+           href="{% url 'manage_questions' %}">
+            <i class="bi bi-patch-question-fill"></i> Savollar
+        </a>
+        <a class="nav-link {% if request.resolver_match.url_name == 'manage_certificates' %}active{% endif %}" 
+           href="{% url 'manage_certificates' %}">
+            <i class="bi bi-award-fill"></i> Sertifikatlar
+        </a>
+    </nav>
+    
+    <!-- QADRIYATLAR -->
+    <div class="sidebar-values">
+        <h6>Qadriyatlarimiz</h6>
+        <span class="value-tag">Halollik</span>
+        <span class="value-tag">Tozalik</span>
+        <span class="value-tag">Tartib</span>
+        <span class="value-tag">Intizom</span>
+        <span class="value-tag">Mehnat</span>
+    </div>
+    
+    <!-- CHIQISH -->
+    <div class="p-3" style="border-top: 1px solid rgba(255,255,255,0.1);">
+        <a class="nav-link" href="{% url 'logout' %}" style="color: #ff8a80;">
+            <i class="bi bi-box-arrow-left"></i> Chiqish
+        </a>
+    </div>
+</div>

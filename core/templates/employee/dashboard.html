@@ -1,0 +1,119 @@
+<!-- core/templates/employee/dashboard.html -->
+{% extends 'base.html' %}
+
+{% block title %}Bosh sahifa — Osiyo Complex{% endblock %}
+
+{% block body %}
+<div class="d-flex">
+    {% include 'sidebar_employee.html' %}
+    
+    <div class="main-content flex-grow-1">
+        <div class="mb-4">
+            <h3>Assalomu alaykum, {{ employee.first_name }}! 👋</h3>
+            <p class="text-muted">{{ employee.department.name }} bo'limi xodimi</p>
+        </div>
+        
+        <!-- Statistika -->
+        <div class="row mb-4">
+            <div class="col-md-4 mb-3">
+                <div class="stat-card">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1">O'tgan imtihonlar</h6>
+                            <h2 class="mb-0">{{ passed_exams }}</h2>
+                        </div>
+                        <i class="bi bi-check-circle" style="font-size: 2.5rem; opacity: 0.5;"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="stat-card success">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1">Kutilayotgan imtihonlar</h6>
+                            <h2 class="mb-0">{{ upcoming_exams|length }}</h2>
+                        </div>
+                        <i class="bi bi-clock" style="font-size: 2.5rem; opacity: 0.5;"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="stat-card warning">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1">Sertifikatlar</h6>
+                            <h2 class="mb-0">{{ certificates|length }}</h2>
+                        </div>
+                        <i class="bi bi-award" style="font-size: 2.5rem; opacity: 0.5;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Kutilayotgan imtihonlar -->
+        {% if upcoming_exams %}
+        <div class="card mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-calendar-event"></i> Kutilayotgan imtihonlar</h5>
+            </div>
+            <div class="card-body">
+                {% for exam in upcoming_exams %}
+                <div class="d-flex justify-content-between align-items-center p-3 mb-2 bg-light rounded">
+                    <div>
+                        <h6 class="mb-1">{{ exam.title }}</h6>
+                        <small class="text-muted">
+                            <i class="bi bi-calendar"></i> {{ exam.exam_date|date:"d.m.Y" }} | 
+                            <i class="bi bi-clock"></i> {{ exam.exam_start_time|time:"H:i" }} — {{ exam.exam_end_time|time:"H:i" }} |
+                            {{ exam.total_questions }} savol | {{ exam.duration_minutes }} daqiqa
+                        </small>
+                    </div>
+                    <a href="{% url 'employee_exams' %}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-arrow-right"></i> Ko'rish
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- So'nggi natijalar -->
+        {% if recent_results %}
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-graph-up"></i> So'nggi natijalar</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Imtihon</th>
+                                <th>Ball</th>
+                                <th>Holat</th>
+                                <th>Sana</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for r in recent_results %}
+                            <tr>
+                                <td>{{ r.exam.title }}</td>
+                                <td>{{ r.score }}%</td>
+                                <td>
+                                    {% if r.result_status == 'passed' %}
+                                        <span class="badge bg-success">O'tdi ✅</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">O'tmadi ❌</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ r.started_at|date:"d.m.Y" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

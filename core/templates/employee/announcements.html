@@ -1,0 +1,35 @@
+<!-- core/templates/employee/announcements.html -->
+{% extends 'base.html' %}
+
+{% block title %}E'lonlar — Osiyo Complex{% endblock %}
+
+{% block body %}
+<div class="d-flex">
+    {% include 'sidebar_employee.html' %}
+    
+    <div class="main-content flex-grow-1">
+        <h3 class="mb-4"><i class="bi bi-megaphone"></i> E'lonlar</h3>
+        
+        {% for ann in announcements %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5>{{ ann.title }}</h5>
+                <p class="text-muted small">
+                    <i class="bi bi-person"></i> {{ ann.created_by.get_full_name }} | 
+                    <i class="bi bi-calendar"></i> {{ ann.created_at|date:"d.m.Y H:i" }}
+                </p>
+                <p>{{ ann.content|linebreaksbr }}</p>
+                {% if ann.image %}
+                    <img src="{{ ann.image.url }}" class="img-fluid rounded" style="max-height: 300px;">
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+            <div class="text-center py-5">
+                <i class="bi bi-megaphone" style="font-size: 4rem; color: #ccc;"></i>
+                <p class="text-muted mt-3">Hozircha e'lonlar yo'q</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

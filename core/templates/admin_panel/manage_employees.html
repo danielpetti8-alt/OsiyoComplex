@@ -1,0 +1,103 @@
+<!-- core/templates/admin_panel/manage_employees.html -->
+{% extends 'base.html' %}
+
+{% block title %}Xodimlar — Admin Panel{% endblock %}
+
+{% block body %}
+<div class="d-flex">
+    {% include 'sidebar_admin.html' %}
+    
+    <div class="main-content flex-grow-1">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3><i class="bi bi-people"></i> Xodimlar boshqaruvi</h3>
+            <a href="{% url 'create_employee' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Yangi xodim
+            </a>
+        </div>
+        
+        <!-- Filter -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form method="GET" class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label">Bo'lim bo'yicha filter:</label>
+                        <select name="department" class="form-select" onchange="this.form.submit()">
+                            <option value="">Barcha bo'limlar</option>
+                            {% for dept in departments %}
+                                <option value="{{ dept.id }}" {% if selected_dept == dept.id|stringformat:"d" %}selected{% endif %}>
+                                    {{ dept.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Xodimlar jadvali -->
+        <div class="card">
+            <div class="card-body">
+                {% if employees %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Ism Familiya</th>
+                                <th>Yosh</th>
+                                <th>Bo'lim</th>
+                                <th>Starshiy xodim</th>
+                                <th>Telefon</th>
+                                <th>Staji</th>
+                                <th>Amallar</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for emp in employees %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>
+                                    <strong>{{ emp.first_name }} {{ emp.last_name }}</strong>
+                                    {% if emp.is_senior %}
+                                        <span class="badge bg-info">Starshiy</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ emp.age }}</td>
+                                <td>{{ emp.department.name|default:"—" }}</td>
+                                <td>
+                                    {% if emp.senior_employee %}
+                                        {{ emp.senior_employee.first_name }} {{ emp.senior_employee.last_name }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
+                                <td>{{ emp.phone }}</td>
+                                <td>{{ emp.work_experience|default:"—" }}</td>
+                                <td>
+                                    <a href="{% url 'edit_employee' emp.pk %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a href="{% url 'delete_employee' emp.pk %}" class="btn btn-sm btn-outline-danger"
+                                       onclick="return confirm('Rostdan o\'chirmoqchimisiz?')">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-people" style="font-size: 4rem; color: #ccc;"></i>
+                        <p class="text-muted mt-3">Hali xodimlar qo'shilmagan</p>
+                        <a href="{% url 'create_employee' %}" class="btn btn-primary">
+                            Birinchi xodimni qo'shing
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

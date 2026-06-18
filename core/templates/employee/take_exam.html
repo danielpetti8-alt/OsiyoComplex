@@ -1,0 +1,152 @@
+<!-- core/templates/employee/take_exam.html -->
+{% extends 'base.html' %}
+
+{% block title %}Imtihon: {{ exam.title }} — Osiyo Complex{% endblock %}
+
+{% block body %}
+<!-- Taymer (yuqorida qotib turadi) -->
+<div class="exam-timer">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h5 class="mb-0">{{ exam.title }}</h5>
+            <small class="text-muted">{{ exam.total_questions }} savol | O'tish bali: {{ exam.passing_score }}%</small>
+        </div>
+        <div>
+            <span class="text-muted">Qolgan vaqt:</span>
+            <span id="timer" class="timer-display ms-2">{{ exam.duration_minutes }}:00</span>
+        </div>
+    </div>
+</div>
+
+<!-- Imtihon formasi -->
+<div class="container py-4">
+    <form method="POST" id="examForm" action="{% url 'submit_exam' exam.pk %}">
+        {% csrf_token %}
+        
+        {% for q in questions %}
+        <div class="question-card" id="question-{{ q.number }}">
+            <div class="d-flex justify-content-between mb-3">
+                <h5 class="mb-0">
+                    <span class="badge bg-primary me-2">{{ q.number }}</span>
+                    Savol {{ q.number }} / {{ questions|length }}
+                </h5>
+            </div>
+            
+            <p class="fs-5 mb-4">{{ q.text }}</p>
+            
+            <label class="option-label">
+                <input type="radio" name="question_{{ q.id }}" value="A" style="display:none;">
+                <span><strong>A)</strong> {{ q.option_a }}</span>
+            </label>
+            
+            <label class="option-label">
+                <input type="radio" name="question_{{ q.id }}" value="B" style="display:none;">
+                <span><strong>B)</strong> {{ q.option_b }}</span>
+            </label>
+            
+            <label class="option-label">
+                <input type="radio" name="question_{{ q.id }}" value="C" style="display:none;">
+                <span><strong>C)</strong> {{ q.option_c }}</span>
+            </label>
+            
+            <label class="option-label">
+                <input type="radio" name="question_{{ q.id }}" value="D" style="display:none;">
+                <span><strong>D)</strong> {{ q.option_d }}</span>
+            </label>
+        </div>
+        {% endfor %}
+        
+        <!-- Savollar navigatsiyasi -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="mb-3">Savollar navigatsiyasi</h5>
+                <div class="d-flex flex-wrap gap-2">
+                    {% for q in questions %}
+                        <a href="#question-{{ q.number }}" 
+                           class="btn btn-outline-secondary btn-sm question-nav-btn" 
+                           data-question="{{ q.id }}"
+                           style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                            {{ q.number }}
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Topshirish tugmasi -->
+        <div class="text-center">
+            <button type="submit" class="btn btn-primary btn-lg px-5" 
+                    onclick="return confirm('Rostdan imtihonni topshirmoqchimisiz? Keyin qayta topshirib bo\'lmaydi!')">
+                <i class="bi bi-send"></i> Imtihonni topshirish
+            </button>
+        </div>
+    </form>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // === IMTIHON TAYMER ===
+    let totalSeconds = {{ duration_seconds }};
+    const timerDisplay = document.getElementById('timer');
+    const examForm = document.getElementById('examForm');
+    
+    function updateTimer() {
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        
+        timerDisplay.textContent = 
+            String(minutes).padStart(2, '0') + ':' + 
+            String(seconds).padStart(2, '0');
+        
+        // Rang o'zgarishi
+        if (totalSeconds <= 60) {
+            timerDisplay.className = 'timer-display danger ms-2';
+        } else if (totalSeconds <= 300) {
+            timerDisplay.className = 'timer-display warning ms-2';
+        }
+        
+        if (totalSeconds <= 0) {
+            clearInterval(timerInterval);
+            alert('Vaqt tugadi! Imtihon avtomatik topshirilmoqda...');
+            examForm.submit();
+            return;
+        }
+        
+        totalSeconds--;
+    }
+    
+    // Har soniyada yangilash
+    updateTimer();
+    const timerInterval = setInterval(updateTimer, 1000);
+    
+    // === JAVOB TANLANGANDA NAV TUGMASINI BOYASH ===
+    document.querySelectorAll('.option-label').forEach(label => {
+        label.addEventListener('click', function() {
+            const input = this.querySelector('input');
+            const questionId = input.name.replace('question_', '');
+            
+            // Boshqa variantlarni tozalash
+            this.parentElement.querySelectorAll('.option-label').forEach(l => {
+                l.style.borderColor = '#e0e0e0';
+                l.style.background = 'white';
+            });
+            
+            // Tanlanganni belgilash
+            this.style.borderColor = '#1a73e8';
+            this.style.background = '#e8f0fe';
+            
+            // Nav tugmasini bo'yash
+            document.querySelector(`[data-question="${questionId}"]`).classList.remove('btn-outline-secondary');
+            document.querySelector(`[data-question="${questionId}"]`).classList.add('btn-success');
+        });
+    });
+    
+    // Sahifani tark etishni oldini olish
+    window.addEventListener('beforeunload', function(e) {
+        e.preventDefault();
+        e.returnValue = '';
+    });
+</script>
+{% endblock %}

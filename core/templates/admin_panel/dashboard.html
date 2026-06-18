@@ -1,0 +1,118 @@
+<!-- core/templates/admin_panel/dashboard.html -->
+{% extends 'base.html' %}
+
+{% block title %}Admin Panel — Osiyo Complex{% endblock %}
+
+{% block body %}
+<div class="d-flex">
+    {% include 'sidebar_admin.html' %}
+    
+    <div class="main-content flex-grow-1">
+        <!-- Yuqori panel -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h3 class="mb-1">Boshqaruv paneli</h3>
+                <p class="text-muted mb-0">Assalomu alaykum, {{ user.get_full_name|default:user.username }}!</p>
+            </div>
+            <div>
+                <span class="badge bg-primary fs-6">
+                    <i class="bi bi-person-gear"></i> Admin
+                </span>
+            </div>
+        </div>
+        
+        <!-- Statistika kartalari -->
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="stat-card">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1">Jami xodimlar</h6>
+                            <h2 class="mb-0">{{ total_employees }}</h2>
+                        </div>
+                        <i class="bi bi-people" style="font-size: 2.5rem; opacity: 0.5;"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="stat-card success">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1">Imtihonlar</h6>
+                            <h2 class="mb-0">{{ total_exams }}</h2>
+                        </div>
+                        <i class="bi bi-journal-check" style="font-size: 2.5rem; opacity: 0.5;"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="stat-card warning">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1">Faol e'lonlar</h6>
+                            <h2 class="mb-0">{{ total_announcements }}</h2>
+                        </div>
+                        <i class="bi bi-megaphone" style="font-size: 2.5rem; opacity: 0.5;"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="stat-card danger">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1">So'nggi natijalar</h6>
+                            <h2 class="mb-0">{{ recent_results|length }}</h2>
+                        </div>
+                        <i class="bi bi-graph-up" style="font-size: 2.5rem; opacity: 0.5;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- So'nggi natijalar -->
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-clock-history"></i> So'nggi imtihon natijalari</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_results %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Xodim</th>
+                                <th>Imtihon</th>
+                                <th>Ball</th>
+                                <th>Holat</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for r in recent_results %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ r.employee.first_name }} {{ r.employee.last_name }}</td>
+                                <td>{{ r.exam.title }}</td>
+                                <td>{{ r.score }}%</td>
+                                <td>
+                                    {% if r.result_status == 'passed' %}
+                                        <span class="badge bg-success">O'tdi</span>
+                                    {% elif r.result_status == 'failed' %}
+                                        <span class="badge bg-danger">O'tmadi</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Kutilmoqda</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                    <p class="text-muted text-center py-4">Hali natijalar yo'q</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

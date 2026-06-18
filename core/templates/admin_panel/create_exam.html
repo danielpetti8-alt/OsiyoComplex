@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block title %}Yangi imtihon — Admin Panel{% endblock %}
+
+{% block body %}
+<div class="d-flex">
+    {% include 'sidebar_admin.html' %}
+
+    <div class="main-content flex-grow-1">
+        <div class="page-header">
+            <h3><i class="bi bi-journal-plus"></i> Yangi imtihon yaratish</h3>
+            <a href="{% url 'manage_exams' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Orqaga
+            </a>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Savollar statistikasi -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-database"></i> Bo'limlar bo'yicha savollar soni</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for item in department_stats %}
+                        <div class="col-md-3 mb-3">
+                            <div class="p-3 rounded" style="background: #f8f9fc; border-left: 4px solid #2EB5A8;">
+                                <strong>{{ item.name }}</strong><br>
+                                <span class="text-muted">{{ item.count }} ta savol</span>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <p class="text-muted">Bo'limlar topilmadi.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Imtihon yaratish formasi -->
+        <div class="card">
+            <div class="card-body p-4">
+                <form method="POST">
+                    {% csrf_token %}
+
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label class="form-label">Imtihon nomi *</label>
+                            <input type="text" name="title" class="form-control"
+                                   placeholder="Masalan: Savdo bo'limi kirish imtihoni" required>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Bo'lim *</label>
+                            <select name="department" class="form-select" required>
+                                <option value="">— Tanlang —</option>
+                                {% for dept in departments %}
+                                    <option value="{{ dept.id }}">{{ dept.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Imtihon sanasi *</label>
+                            <input type="date" name="exam_date" class="form-control" required>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Boshlanish vaqti *</label>
+                            <input type="time" name="exam_start_time" class="form-control" required>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Tugash vaqti *</label>
+                            <input type="time" name="exam_end_time" class="form-control" required>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Davomiyligi (daqiqa) *</label>
+                            <input type="number" name="duration_minutes" class="form-control"
+                                   min="5" max="180" placeholder="Masalan: 30" required>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Savollar soni *</label>
+                            <input type="number" name="total_questions" class="form-control"
+                                   min="1" placeholder="Masalan: 20" required>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">O'tish bali (%) *</label>
+                            <input type="number" name="passing_score" class="form-control"
+                                   min="1" max="100" placeholder="Masalan: 70" required>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{% url 'manage_exams' %}" class="btn btn-outline-secondary">
+                            Bekor qilish
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Imtihon yaratish
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

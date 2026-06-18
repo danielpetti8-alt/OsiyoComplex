@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block title %}Imtihonlar — Admin Panel{% endblock %}
+
+{% block body %}
+<div class="d-flex">
+    {% include 'sidebar_admin.html' %}
+
+    <div class="main-content flex-grow-1">
+        <div class="page-header">
+            <h3><i class="bi bi-journal-check"></i> Imtihonlar boshqaruvi</h3>
+            <a href="{% url 'create_exam' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Yangi imtihon
+            </a>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-list-task"></i> Imtihonlar ro'yxati</h5>
+            </div>
+            <div class="card-body">
+                {% if exams %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Imtihon nomi</th>
+                                    <th>Bo'lim</th>
+                                    <th>Sana</th>
+                                    <th>Boshlanish</th>
+                                    <th>Tugash</th>
+                                    <th>Davomiyligi</th>
+                                    <th>Savollar</th>
+                                    <th>O'tish bali</th>
+                                    <th>Holat</th>
+                                    <th>Amallar</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for exam in exams %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+
+                                    <td>
+                                        <strong>{{ exam.title }}</strong>
+                                    </td>
+
+                                    <td>
+                                        {% if exam.department %}
+                                            {{ exam.department.name }}
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </td>
+
+                                    <td>{{ exam.exam_date|date:"d.m.Y" }}</td>
+                                    <td>{{ exam.exam_start_time|time:"H:i" }}</td>
+                                    <td>{{ exam.exam_end_time|time:"H:i" }}</td>
+                                    <td>{{ exam.duration_minutes }} daqiqa</td>
+                                    <td>{{ exam.total_questions }} ta</td>
+                                    <td>{{ exam.passing_score }}%</td>
+
+                                    <td>
+                                        {% if exam.is_active %}
+                                            <span class="badge bg-success">Faol</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Nofaol</span>
+                                        {% endif %}
+                                    </td>
+
+                                    <td>
+                                        <div class="d-flex gap-2">
+                                            <a href="{% url 'edit_exam' exam.pk %}" class="btn btn-sm btn-outline-primary" title="Tahrirlash">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+
+                                            <a href="{% url 'delete_exam' exam.pk %}"
+                                               class="btn btn-sm btn-outline-danger"
+                                               title="O'chirish"
+                                               onclick="return confirm('Rostdan ham ushbu imtihonni o‘chirmoqchimisiz?')">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-journal-x" style="font-size: 4rem; color: #ddd;"></i>
+                        <h5 class="mt-3 text-muted">Hali imtihonlar yaratilmagan</h5>
+                        <p class="text-muted">Birinchi imtihonni yaratish uchun quyidagi tugmani bosing</p>
+                        <a href="{% url 'create_exam' %}" class="btn btn-primary mt-2">
+                            <i class="bi bi-plus-circle"></i> Yangi imtihon yaratish
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

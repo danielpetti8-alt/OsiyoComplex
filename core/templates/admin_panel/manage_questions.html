@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+
+{% block title %}Savollar — Admin Panel{% endblock %}
+
+{% block body %}
+<div class="d-flex">
+    {% include 'sidebar_admin.html' %}
+    
+    <div class="main-content flex-grow-1">
+        <div class="page-header">
+            <h3><i class="bi bi-patch-question-fill"></i> Savollar bazasi</h3>
+            <div class="d-flex gap-2">
+                <a href="{% url 'upload_questions' %}" class="btn btn-outline-primary">
+                    <i class="bi bi-file-earmark-word"></i> Word'dan yuklash
+                </a>
+                <a href="{% url 'create_question' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Yangi savol
+                </a>
+            </div>
+        </div>
+        
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" data-aos="fade-down">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        <!-- Statistika -->
+        <div class="row mb-4">
+            <div class="col-md-3" data-aos="fade-up">
+                <div class="stat-card">
+                    <h6>Jami savollar</h6>
+                    <h2>{{ total }}</h2>
+                    <i class="bi bi-database stat-icon"></i>
+                </div>
+            </div>
+            {% for name, count in stats.items %}
+                <div class="col-md-3" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:'100' }}">
+                    <div class="stat-card turquoise">
+                        <h6>{{ name }}</h6>
+                        <h2>{{ count }}</h2>
+                        <i class="bi bi-folder-fill stat-icon"></i>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Filter -->
+        <div class="card" data-aos="fade-up">
+            <div class="card-body">
+                <form method="GET" class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label">Bo'lim bo'yicha filter</label>
+                        <select name="department" class="form-select" onchange="this.form.submit()">
+                            <option value="">Barcha bo'limlar</option>
+                            {% for dept in departments %}
+                                <option value="{{ dept.id }}" {% if selected_dept == dept.id|stringformat:"d" %}selected{% endif %}>
+                                    {{ dept.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Savollar ro'yxati -->
+        <div class="card mt-4" data-aos="fade-up">
+            <div class="card-body">
+                {% if questions %}
+                    {% for q in questions %}
+                    <div class="question-card mb-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="badge bg-info me-2">{{ q.department.name }}</span>
+                                    <span class="badge bg-success">To'g'ri javob: {{ q.correct_answer }}</span>
+                                </div>
+                                <h5 class="mb-3">{{ forloop.counter }}. {{ q.text }}</h5>
+                                <div class="row">
+                                    <div class="col-md-6 mb-2">
+                                        <strong class="{% if q.correct_answer == 'A' %}text-success{% endif %}">A)</strong> {{ q.option_a }}
+                                    </div>
+                                    <div class="col-md-6 mb-2">
+                                        <strong class="{% if q.correct_answer == 'B' %}text-success{% endif %}">B)</strong> {{ q.option_b }}
+                                    </div>
+                                    <div class="col-md-6 mb-2">
+                                        <strong class="{% if q.correct_answer == 'C' %}text-success{% endif %}">C)</strong> {{ q.option_c }}
+                                    </div>
+                                    <div class="col-md-6 mb-2">
+                                        <strong class="{% if q.correct_answer == 'D' %}text-success{% endif %}">D)</strong> {{ q.option_d }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ms-3 d-flex flex-column gap-2">
+                                <a href="{% url 'edit_question' q.pk %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="{% url 'delete_question' q.pk %}" class="btn btn-sm btn-outline-danger"
+                                   onclick="return confirm('Rostdan o\'chirmoqchimisiz?')">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-patch-question" style="font-size: 5rem; color: #ddd;"></i>
+                        <h5 class="text-muted mt-3">Hali savollar yo'q</h5>
+                        <p class="text-muted">Birinchi savolingizni qo'shing yoki Word fayldan yuklang</p>
+                        <a href="{% url 'create_question' %}" class="btn btn-primary mt-3">
+                            <i class="bi bi-plus-circle"></i> Birinchi savolni qo'shish
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

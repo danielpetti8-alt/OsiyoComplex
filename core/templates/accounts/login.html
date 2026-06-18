@@ -1,0 +1,93 @@
+<!-- core/templates/accounts/login.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Kirish — Osiyo Complex{% endblock %}
+
+{% block body %}
+<div class="login-wrapper">
+    <!-- CHAP TOMON: Logo va shior -->
+    <div class="login-left">
+        <div class="login-left-content">
+            <img src="{% static 'core/images/logo.png' %}" alt="Osiyo Complex" class="login-left-logo">
+            
+            <h1>Osiyo Complex</h1>
+            <p class="tagline">Sifat • Halollik • Ishonch</p>
+            
+            <p style="color: rgba(255,255,255,0.7); font-size: 1rem; line-height: 1.7;">
+                Xodimlar uchun zamonaviy imtihon va bilim baholash platformasi
+            </p>
+            
+            <div class="values-grid">
+                <div class="value-card">
+                    <i class="bi bi-shield-check"></i>
+                    <span>Halollik</span>
+                </div>
+                <div class="value-card">
+                    <i class="bi bi-droplet"></i>
+                    <span>Tozalik</span>
+                </div>
+                <div class="value-card">
+                    <i class="bi bi-list-check"></i>
+                    <span>Tartib</span>
+                </div>
+                <div class="value-card">
+                    <i class="bi bi-clock-history"></i>
+                    <span>Intizom</span>
+                </div>
+                <div class="value-card">
+                    <i class="bi bi-briefcase"></i>
+                    <span>Mehnatsevarlik</span>
+                </div>
+                <div class="value-card">
+                    <i class="bi bi-stars"></i>
+                    <span>Sifat</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- O'NG TOMON: Login formasi -->
+    <div class="login-right">
+        <div class="login-form-container">
+            <h2>Xush kelibsiz! 👋</h2>
+            <p class="subtitle">Tizimga kirish uchun login va parolingizni kiriting</p>
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+            
+            <form method="POST">
+                {% csrf_token %}
+                
+                <div class="input-group-modern">
+                    <i class="bi bi-person-fill"></i>
+                    <input type="text" name="username" class="form-control" 
+                           placeholder="Login" required autofocus>
+                </div>
+                
+                <div class="input-group-modern">
+                    <i class="bi bi-lock-fill"></i>
+                    <input type="password" name="password" class="form-control" 
+                           placeholder="Parol" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-login">
+                    <i class="bi bi-box-arrow-in-right me-2"></i> Kirish
+                </button>
+            </form>
+            
+            <div class="text-center mt-4">
+                <small class="text-muted">
+                    © 2024 Osiyo Complex. Barcha huquqlar himoyalangan.
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

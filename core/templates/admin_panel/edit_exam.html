@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}Imtihonni tahrirlash{% endblock %}
+
+{% block body %}
+<div class="d-flex">
+    {% include 'sidebar_admin.html' %}
+
+    <div class="main-content flex-grow-1">
+        <div class="page-header">
+            <h3><i class="bi bi-pencil-square"></i> Imtihonni tahrirlash</h3>
+            <a href="{% url 'manage_exams' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Orqaga
+            </a>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="card">
+            <div class="card-body p-4">
+                <form method="POST">
+                    {% csrf_token %}
+
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label class="form-label">Imtihon nomi *</label>
+                            <input type="text" name="title" class="form-control" value="{{ exam.title }}" required>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Bo'lim *</label>
+                            <select name="department" class="form-select" required>
+                                {% for dept in departments %}
+                                    <option value="{{ dept.id }}" {% if exam.department.id == dept.id %}selected{% endif %}>
+                                        {{ dept.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Imtihon sanasi *</label>
+                            <input type="date" name="exam_date" class="form-control" value="{{ exam.exam_date|date:'Y-m-d' }}" required>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Boshlanish vaqti *</label>
+                            <input type="time" name="exam_start_time" class="form-control" value="{{ exam.exam_start_time|time:'H:i' }}" required>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Tugash vaqti *</label>
+                            <input type="time" name="exam_end_time" class="form-control" value="{{ exam.exam_end_time|time:'H:i' }}" required>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Davomiyligi (daqiqa) *</label>
+                            <input type="number" name="duration_minutes" class="form-control" value="{{ exam.duration_minutes }}" min="5" max="180" required>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Savollar soni *</label>
+                            <input type="number" name="total_questions" class="form-control" value="{{ exam.total_questions }}" min="1" required>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">O'tish bali (%) *</label>
+                            <input type="number" name="passing_score" class="form-control" value="{{ exam.passing_score }}" min="1" max="100" required>
+                        </div>
+
+                        <div class="col-md-4 mb-3 d-flex align-items-end">
+                            <div class="form-check">
+                                <input type="checkbox" name="is_active" class="form-check-input" id="isActive"
+                                       {% if exam.is_active %}checked{% endif %}>
+                                <label class="form-check-label" for="isActive">Faol imtihon</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{% url 'manage_exams' %}" class="btn btn-outline-secondary">Bekor qilish</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Saqlash
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

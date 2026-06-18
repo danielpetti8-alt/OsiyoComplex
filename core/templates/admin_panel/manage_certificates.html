@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Sertifikatlar — Admin Panel{% endblock %}
+
+{% block body %}
+<div class="d-flex">
+    {% include 'sidebar_admin.html' %}
+
+    <div class="main-content flex-grow-1">
+        <div class="page-header">
+            <h3><i class="bi bi-award-fill"></i> Sertifikatlar</h3>
+            <a href="{% url 'upload_cert_template' %}" class="btn btn-primary">
+                <i class="bi bi-upload"></i> Yangi shablon yuklash
+            </a>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Aktiv shablon -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-image"></i> Joriy sertifikat shabloni</h5>
+            </div>
+            <div class="card-body">
+                {% if templates %}
+                    <div class="row">
+                        {% for t in templates %}
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100">
+                                    {% if t.background_image %}
+                                        <img src="{{ t.background_image.url }}" class="card-img-top" style="height: 200px; object-fit: cover;">
+                                    {% endif %}
+                                    <div class="card-body text-center">
+                                        <h6 class="card-title">{{ t.name }}</h6>
+                                        {% if t.is_active %}
+                                            <span class="badge bg-success">Faol</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Nofaol</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-image" style="font-size: 3rem; color: #ddd;"></i>
+                        <p class="text-muted mt-2">Hali sertifikat shabloni yuklanmagan</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Berilgan sertifikatlar -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-file-earmark-pdf"></i> Berilgan sertifikatlar</h5>
+            </div>
+            <div class="card-body">
+                {% if certificates %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Raqami</th>
+                                    <th>Xodim</th>
+                                    <th>Imtihon</th>
+                                    <th>Ball</th>
+                                    <th>Sana</th>
+                                    <th>Amallar</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for cert in certificates %}
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td><code>{{ cert.certificate_number }}</code></td>
+                                        <td>
+                                            <strong>{{ cert.employee.first_name }} {{ cert.employee.last_name }}</strong>
+                                        </td>
+                                        <td>{{ cert.exam_result.exam.title }}</td>
+                                        <td>
+                                            <span class="badge {% if cert.exam_result.score >= 80 %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                                                {{ cert.exam_result.score }}%
+                                            </span>
+                                        </td>
+                                        <td>{{ cert.issued_date|date:"d.m.Y" }}</td>
+                                        <td>
+                                            <div class="d-flex gap-2">
+                                                <a href="{{ cert.certificate_file.url }}" target="_blank" class="btn btn-sm btn-outline-primary" title="Ko'rish">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                                <a href="{% url 'download_certificate' cert.pk %}" class="btn btn-sm btn-outline-success" title="Yuklash">
+                                                    <i class="bi bi-download"></i>
+                                                </a>
+                                                <a href="{% url 'regenerate_certificate_admin' cert.pk %}" 
+                                                   class="btn btn-sm btn-outline-warning" 
+                                                   title="Qayta generatsiya"
+                                                   onclick="return confirm('Sertifikat yangi shablon asosida qayta yaratilsinmi?')">
+                                                    <i class="bi bi-arrow-repeat"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-award" style="font-size: 4rem; color: #ddd;"></i>
+                        <h5 class="text-muted mt-3">Hali sertifikatlar berilmagan</h5>
+                        <p class="text-muted">Xodim imtihondan o'tganda avtomatik yaratiladi</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
