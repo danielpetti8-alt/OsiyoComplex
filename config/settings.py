@@ -12,7 +12,10 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'gTdj9ds2t6XfK03QNypWQkiyt2nS37g8K5nwJ
 # Vercelda DEBUG=False bo'ladi, lokalda True:
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ['.vercel.app', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = os.environ.get(
+    'ALLOWED_HOSTS',
+    'localhost,127.0.0.1'
+).split(',')
 
 # --- O'rnatilgan ilovalar ---
 INSTALLED_APPS = [
@@ -104,6 +107,7 @@ MESSAGE_TAGS = {
 
 CSRF_TRUSTED_ORIGINS = [
     "https://*.vercel.app",
+    "https://*.onrender.com",
     "https://*.trycloudflare.com",
     "https://*.ngrok-free.app",
     "https://*.ngrok-free.dev",
