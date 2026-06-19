@@ -12,10 +12,11 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'gTdj9ds2t6XfK03QNypWQkiyt2nS37g8K5nwJ
 # Vercelda DEBUG=False bo'ladi, lokalda True:
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = os.environ.get(
-    'ALLOWED_HOSTS',
-    'localhost,127.0.0.1'
-).split(',')
+ALLOWED_HOSTS = [
+    "osiyocomplex.onrender.com",
+    "localhost",
+    "127.0.0.1"
+]
 
 # --- O'rnatilgan ilovalar ---
 INSTALLED_APPS = [
