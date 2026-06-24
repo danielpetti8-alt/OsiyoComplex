@@ -29,7 +29,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'core',  # Bizning asosiy ilova
+    'cloudinary',
+    'cloudinary_storage',
+
+    'core',
 ]
 
 # --- Middleware ---
@@ -42,8 +45,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'cloudinary',
-    'cloudinary_storage',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -96,9 +97,9 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # --- Media fayllar (yuklangan fayllar) ---
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': os.environ.get('dhtfs2qxt'),
-    'API_KEY': os.environ.get('922813391776226'),
-    'API_SECRET': os.environ.get('Ou5uYDHlfArpCNwBvvIyaU-paG8'),
+    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
+    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
 }
 
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
