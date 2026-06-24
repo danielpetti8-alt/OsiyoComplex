@@ -2,6 +2,9 @@
 import os
 from pathlib import Path
 import dj_database_url
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -39,6 +42,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'cloudinary',
+    'cloudinary_storage',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -90,8 +95,14 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # --- Media fayllar (yuklangan fayllar) ---
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.environ.get('dhtfs2qxt'),
+    'API_KEY': os.environ.get('922813391776226'),
+    'API_SECRET': os.environ.get('Ou5uYDHlfArpCNwBvvIyaU-paG8'),
+}
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # --- Login sozlamalari ---
 LOGIN_URL = 'login'
