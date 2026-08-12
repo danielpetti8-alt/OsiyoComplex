@@ -795,7 +795,11 @@ def submit_exam(request, pk):
     result.score = round((correct / result.total_questions) * 100, 1) if result.total_questions > 0 else 0
     result.result_status, result.finished_at = 'passed' if result.score >= exam.passing_score else 'failed', timezone.now()
     result.save()
-    if result.result_status == 'passed': generate_certificate(result)
+        if result.result_status == 'passed':
+        try:
+            generate_certificate(result)
+        except Exception as e:
+            print(f"Sertifikat generatsiyasida xatolik: {e}")
     return redirect('exam_result', pk=exam.pk)
 
 @login_required
@@ -809,12 +813,13 @@ def exam_result(request, pk):
     return render(request, 'employee/exam_result.html', {'exam': exam, 'result': result, 'detailed_results': detailed})
 
 def generate_certificate(exam_result, force=False):
-    """Imtihondan o'tgan xodim uchun chiroyli sertifikat yaratish"""
+    """Imtihondan o'tgan xodim uchun sertifikat yaratish (Cloudinary + Unicode)"""
     from reportlab.pdfgen import canvas
     from reportlab.lib.pagesizes import A4, landscape
-    from reportlab.lib.colors import HexColor, white, black
+    from reportlab.lib.colors import HexColor
     from reportlab.pdfbase import pdfmetrics
     from reportlab.pdfbase.ttfonts import TTFont
+    from reportlab.lib.utils import ImageReader
     from django.core.files.base import ContentFile
     import uuid
     import os
@@ -822,7 +827,6 @@ def generate_certificate(exam_result, force=False):
     employee = exam_result.employee
     exam = exam_result.exam
 
-    # Agar eski sertifikat bo'lsa va force=True bo'lsa, o'chirib tashlaymiz
     existing_certificate = Certificate.objects.filter(exam_result=exam_result).first()
     if existing_certificate and not force:
         return existing_certificate
@@ -834,93 +838,142 @@ def generate_certificate(exam_result, force=False):
 
     cert_number = f"OC-{exam.id}-{employee.id}-{uuid.uuid4().hex[:6].upper()}"
 
-    # PDF o'lchami: Landscape A4
     width, height = landscape(A4)  # 842 x 595
+
+    # --- Unicode shrift (Helvetica o'zbek harflarini ko'tarmaydi) ---
+    font_reg = "Helvetica"
+    font_bold = "Helvetica-Bold"
+    font_obl = "Helvetica-Oblique"
+
+    regular_candidates = [
+        os.path.join(settings.BASE_DIR, "core", "static", "fonts", "DejaVuSans.ttf"),
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+        r"C:\Windows\Fonts\arial.ttf",
+    ]
+    bold_candidates = [
+        os.path.join(settings.BASE_DIR, "core", "static", "fonts", "DejaVuSans-Bold.ttf"),
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+        "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
+        r"C:\Windows\Fonts\arialbd.ttf",
+    ]
+
+    for path in regular_candidates:
+        if os.path.exists(path):
+            try:
+                pdfmetrics.registerFont(TTFont("CertSans", path))
+                font_reg = "CertSans"
+                font_obl = "CertSans"
+                break
+            except Exception:
+                pass
+
+    for path in bold_candidates:
+        if os.path.exists(path):
+            try:
+                pdfmetrics.registerFont(TTFont("CertSans-Bold", path))
+                font_bold = "CertSans-Bold"
+                break
+            except Exception:
+                pass
 
     buffer = io.BytesIO()
     p = canvas.Canvas(buffer, pagesize=landscape(A4))
 
-    # === FON RASMNI CHIZISH ===
-    template = CertificateTemplate.objects.filter(is_active=True).order_by('-id').first()
+    template = CertificateTemplate.objects.filter(is_active=True).order_by("-id").first()
 
+    # --- Fon rasmi: lokal path EMAS, storage.open() (Cloudinary ishlaydi) ---
     if template and template.background_image:
-        bg_path = template.background_image.path
-        if os.path.exists(bg_path):
-            # Butun sahifani fon rasmdan to'ldirish
-            p.drawImage(bg_path, 0, 0, width=width, height=height, preserveAspectRatio=True, mask='auto')
+        try:
+            with template.background_image.open("rb") as img_file:
+                img = ImageReader(io.BytesIO(img_file.read()))
+            p.drawImage(
+                img, 0, 0,
+                width=width, height=height,
+                preserveAspectRatio=True,
+                mask="auto",
+            )
+        except Exception as e:
+            print(f"Sertifikat fon rasmini chizishda xatolik: {e}")
 
-    # === MATNLARNI CHIZISH ===
-    # Sertifikat markaziy joylashuv nuqtalari
+    # Admin kiritgan koordinatalar (ReportLab: chap-past = 0,0)
+    if template:
+        name_x = template.name_x
+        name_y = template.name_y
+        name_size = template.name_font_size or 32
+        date_x = template.date_x
+        date_y = template.date_y
+    else:
+        name_x = width / 2
+        name_y = height - 220
+        name_size = 32
+        date_x = width / 2
+        date_y = height - 55
+
     center_x = width / 2
 
-    # 1. YUQORI QISM: Sana (kichik, yuqorida o'ng yoki chap tomonda)
-    p.setFillColor(HexColor("#5a4a3a"))  # Qoraygan oltin/qaymoq rang
-    p.setFont("Helvetica", 10)
-    p.drawCentredString(center_x, height - 55, timezone.localtime().strftime('%d.%m.%Y'))
-
-    # 2. SERTIFIKAT SARlavhasi (agar fonda yo'q bo'lsa, biz chizamiz)
-    # Agar shablon o'zida "Certificate" yozuvi bo'lsa, bu qismini # comment qilish mumkin
-    # p.setFillColor(HexColor("#1a1d2e"))  # To'q ko'k
-    # p.setFont("Times-Bold", 42)
-    # p.drawCentredString(center_x, height - 110, "SERTIFIKAT")
-
-    # 3. "Topshiriladi" matni
+    # Sana
     p.setFillColor(HexColor("#5a4a3a"))
-    p.setFont("Helvetica-Oblique", 13)
-    p.drawCentredString(center_x, height - 155, "Ushbu sertifikat quyidagi shaxsga topshiriladi")
+    p.setFont(font_reg, 10)
+    p.drawCentredString(date_x, date_y, timezone.localtime().strftime("%d.%m.%Y"))
 
-    # 4. XODIM ISMI (ENG KATTA, MARKAZDA)
-    # Shablonning markaziy bo'sh qismiga joylashadi
-    p.setFillColor(HexColor("#1a1d2e"))  # To'q ko'k-qora
-    p.setFont("Helvetica-Bold", 32)
+    # Izoh
+    p.setFillColor(HexColor("#5a4a3a"))
+    p.setFont(font_obl, 13)
+    p.drawCentredString(center_x, name_y + 65, "Ushbu sertifikat quyidagi shaxsga topshiriladi")
+
+    # Xodim ismi
+    p.setFillColor(HexColor("#1a1d2e"))
+    p.setFont(font_bold, name_size)
     full_name = f"{employee.first_name} {employee.last_name}"
-    p.drawCentredString(center_x, height - 220, full_name)
+    p.drawCentredString(name_x, name_y, full_name)
 
-    # 5. CHIZIQ (ism ostida)
-    p.setStrokeColor(HexColor("#D4A85A"))  # Oltin rang
+    # Chiziq
+    p.setStrokeColor(HexColor("#D4A85A"))
     p.setLineWidth(2)
     line_width = 350
-    p.line(center_x - line_width/2, height - 235, center_x + line_width/2, height - 235)
+    p.line(name_x - line_width / 2, name_y - 15, name_x + line_width / 2, name_y - 15)
 
-    # 6. BO'LIM NOMI
-    p.setFillColor(HexColor("#2EB5A8"))  # Feruza
-    p.setFont("Helvetica-Bold", 14)
-    p.drawCentredString(center_x, height - 265, f"Bo'lim: {employee.department.name if employee.department else '---'}")
+    # Bo'lim
+    p.setFillColor(HexColor("#2EB5A8"))
+    p.setFont(font_bold, 14)
+    dept_name = employee.department.name if employee.department else "---"
+    p.drawCentredString(center_x, name_y - 45, f"Bo'lim: {dept_name}")
 
-    # 7. IMTIHON NOMI
+    # Imtihon
     p.setFillColor(HexColor("#5a4a3a"))
-    p.setFont("Helvetica", 13)
-    p.drawCentredString(center_x, height - 290, f"Imtihon: {exam.title}")
+    p.setFont(font_reg, 13)
+    p.drawCentredString(center_x, name_y - 70, f"Imtihon: {exam.title}")
 
-    # 8. NATIJA (katta va ko'zga tegishli)
+    # Natija
     p.setFillColor(HexColor("#1a1d2e"))
-    p.setFont("Helvetica-Bold", 20)
-    p.drawCentredString(center_x, height - 325, f"Natija: {exam_result.score}%")
+    p.setFont(font_bold, 20)
+    p.drawCentredString(center_x, name_y - 105, f"Natija: {exam_result.score}%")
 
-    # 9. O'TISH / O'TMASLIK holati
-    if exam_result.result_status == 'passed':
+    if exam_result.result_status == "passed":
         status_text = "Imtihondan muvaffaqiyatli o'tdi"
-        status_color = HexColor("#1cc88a")  # Yashil
+        status_color = HexColor("#1cc88a")
     else:
         status_text = "Imtihon topshirildi"
         status_color = HexColor("#5a4a3a")
 
     p.setFillColor(status_color)
-    p.setFont("Helvetica-Bold", 14)
-    p.drawCentredString(center_x, height - 355, status_text)
+    p.setFont(font_bold, 14)
+    p.drawCentredString(center_x, name_y - 135, status_text)
 
-    # 10. PASTKI QISM: Sertifikat raqami
-    # Ekranning eng pastida, markazda
-    p.setFillColor(HexColor("#7a869a"))  # Kulrang
-    p.setFont("Helvetica", 9)
-    p.drawCentredString(center_x, 30, f"Sertifikat raqami: {cert_number}  |  Berilgan sana: {timezone.localtime().strftime('%d.%m.%Y')}")
+    # Sertifikat raqami
+    p.setFillColor(HexColor("#7a869a"))
+    p.setFont(font_reg, 9)
+    p.drawCentredString(
+        center_x,
+        30,
+        f"Sertifikat raqami: {cert_number}  |  Berilgan sana: {timezone.localtime().strftime('%d.%m.%Y')}",
+    )
 
-    # === PDF NI YAKUNLASH ===
     p.showPage()
     p.save()
     buffer.seek(0)
 
-    # === BAZAGA SAQLASH ===
     cert = Certificate(
         exam_result=exam_result,
         employee=employee,
@@ -928,7 +981,7 @@ def generate_certificate(exam_result, force=False):
     )
     cert.certificate_file.save(
         f"certificate_{cert_number}.pdf",
-        ContentFile(buffer.getvalue())
+        ContentFile(buffer.getvalue()),
     )
     cert.save()
 
