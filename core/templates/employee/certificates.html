@@ -33,10 +33,7 @@
                             Sertifikat raqami: <code>{{ cert.certificate_number }}</code><br>
                             Berilgan sana: {{ cert.issued_date|date:"d.m.Y" }}
                         </p>
-                        <a href="{% url 'download_certificate' cert.pk %}" class="btn btn-success">
-                            <i class="bi bi-download"></i> Yuklab olish
-                        </a>
-                        <a href="{{ cert.certificate_file.url }}" target="_blank" class="btn btn-outline-primary">
+                                         <a href="{% url 'view_certificate' cert.pk %}" target="_blank" class="btn btn-outline-primary">
                             <i class="bi bi-eye"></i> Ko'rish
                         </a>
                     </div>

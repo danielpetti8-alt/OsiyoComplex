@@ -812,35 +812,32 @@ def exam_result(request, pk):
         detailed.append({'number': q['number'], 'text': q['text'], 'options': {'A': q['option_a'], 'B': q['option_b'], 'C': q['option_c'], 'D': q['option_d']}, 'user_answer': result.user_answers.get(str(q['id']), '-'), 'correct_answer': correct_ans, 'is_correct': result.user_answers.get(str(q['id']), '').upper() == correct_ans})
     return render(request, 'employee/exam_result.html', {'exam': exam, 'result': result, 'detailed_results': detailed})
 
-def generate_certificate(exam_result, force=False):
-    """Imtihondan o'tgan xodim uchun sertifikat yaratish (Cloudinary + Unicode)"""
-    from reportlab.pdfgen import canvas
-    from reportlab.lib.pagesizes import A4, landscape
-    from reportlab.lib.colors import HexColor
+def _ascii_safe(text):
+    """Helvetica uchun o'zbek apostroflarini oddiy ' ga almashtirish"""
+    if text is None:
+        return ""
+    text = str(text)
+    for bad, good in (
+        ("\u2018", "'"),
+        ("\u2019", "'"),
+        ("\u02bb", "'"),
+        ("\u02bc", "'"),
+        ("\u2018", "'"),
+        ("ʻ", "'"),
+        ("ʼ", "'"),
+        ("`", "'"),
+        ("\u2013", "-"),
+        ("\u2014", "-"),
+    ):
+        text = text.replace(bad, good)
+    return text
+
+
+def _register_cert_fonts():
     from reportlab.pdfbase import pdfmetrics
     from reportlab.pdfbase.ttfonts import TTFont
-    from reportlab.lib.utils import ImageReader
-    from django.core.files.base import ContentFile
-    import uuid
     import os
 
-    employee = exam_result.employee
-    exam = exam_result.exam
-
-    existing_certificate = Certificate.objects.filter(exam_result=exam_result).first()
-    if existing_certificate and not force:
-        return existing_certificate
-
-    if existing_certificate and force:
-        if existing_certificate.certificate_file:
-            existing_certificate.certificate_file.delete(save=False)
-        existing_certificate.delete()
-
-    cert_number = f"OC-{exam.id}-{employee.id}-{uuid.uuid4().hex[:6].upper()}"
-
-    width, height = landscape(A4)  # 842 x 595
-
-    # --- Unicode shrift (Helvetica o'zbek harflarini ko'tarmaydi) ---
     font_reg = "Helvetica"
     font_bold = "Helvetica-Bold"
     font_obl = "Helvetica-Oblique"
@@ -877,12 +874,26 @@ def generate_certificate(exam_result, force=False):
             except Exception:
                 pass
 
+    return font_reg, font_bold, font_obl
+
+
+def _build_certificate_pdf(exam_result, cert_number):
+    """PDF baytlarini xotirada yasaydi. Cloudinary'ga bog'lanmaydi."""
+    from reportlab.pdfgen import canvas
+    from reportlab.lib.pagesizes import A4, landscape
+    from reportlab.lib.colors import HexColor
+    from reportlab.lib.utils import ImageReader
+
+    employee = exam_result.employee
+    exam = exam_result.exam
+    font_reg, font_bold, font_obl = _register_cert_fonts()
+
+    width, height = landscape(A4)
     buffer = io.BytesIO()
     p = canvas.Canvas(buffer, pagesize=landscape(A4))
 
     template = CertificateTemplate.objects.filter(is_active=True).order_by("-id").first()
 
-    # --- Fon rasmi: lokal path EMAS, storage.open() (Cloudinary ishlaydi) ---
     if template and template.background_image:
         try:
             with template.background_image.open("rb") as img_file:
@@ -896,7 +907,6 @@ def generate_certificate(exam_result, force=False):
         except Exception as e:
             print(f"Sertifikat fon rasmini chizishda xatolik: {e}")
 
-    # Admin kiritgan koordinatalar (ReportLab: chap-past = 0,0)
     if template:
         name_x = template.name_x
         name_y = template.name_y
@@ -911,41 +921,35 @@ def generate_certificate(exam_result, force=False):
         date_y = height - 55
 
     center_x = width / 2
+    issued = timezone.localtime().strftime("%d.%m.%Y")
 
-    # Sana
     p.setFillColor(HexColor("#5a4a3a"))
     p.setFont(font_reg, 10)
-    p.drawCentredString(date_x, date_y, timezone.localtime().strftime("%d.%m.%Y"))
+    p.drawCentredString(date_x, date_y, issued)
 
-    # Izoh
     p.setFillColor(HexColor("#5a4a3a"))
     p.setFont(font_obl, 13)
-    p.drawCentredString(center_x, name_y + 65, "Ushbu sertifikat quyidagi shaxsga topshiriladi")
+    p.drawCentredString(center_x, name_y + 65, _ascii_safe("Ushbu sertifikat quyidagi shaxsga topshiriladi"))
 
-    # Xodim ismi
     p.setFillColor(HexColor("#1a1d2e"))
     p.setFont(font_bold, name_size)
-    full_name = f"{employee.first_name} {employee.last_name}"
+    full_name = _ascii_safe(f"{employee.first_name} {employee.last_name}")
     p.drawCentredString(name_x, name_y, full_name)
 
-    # Chiziq
     p.setStrokeColor(HexColor("#D4A85A"))
     p.setLineWidth(2)
     line_width = 350
     p.line(name_x - line_width / 2, name_y - 15, name_x + line_width / 2, name_y - 15)
 
-    # Bo'lim
     p.setFillColor(HexColor("#2EB5A8"))
     p.setFont(font_bold, 14)
     dept_name = employee.department.name if employee.department else "---"
-    p.drawCentredString(center_x, name_y - 45, f"Bo'lim: {dept_name}")
+    p.drawCentredString(center_x, name_y - 45, _ascii_safe(f"Bo'lim: {dept_name}"))
 
-    # Imtihon
     p.setFillColor(HexColor("#5a4a3a"))
     p.setFont(font_reg, 13)
-    p.drawCentredString(center_x, name_y - 70, f"Imtihon: {exam.title}")
+    p.drawCentredString(center_x, name_y - 70, _ascii_safe(f"Imtihon: {exam.title}"))
 
-    # Natija
     p.setFillColor(HexColor("#1a1d2e"))
     p.setFont(font_bold, 20)
     p.drawCentredString(center_x, name_y - 105, f"Natija: {exam_result.score}%")
@@ -959,45 +963,105 @@ def generate_certificate(exam_result, force=False):
 
     p.setFillColor(status_color)
     p.setFont(font_bold, 14)
-    p.drawCentredString(center_x, name_y - 135, status_text)
+    p.drawCentredString(center_x, name_y - 135, _ascii_safe(status_text))
 
-    # Sertifikat raqami
     p.setFillColor(HexColor("#7a869a"))
     p.setFont(font_reg, 9)
     p.drawCentredString(
         center_x,
         30,
-        f"Sertifikat raqami: {cert_number}  |  Berilgan sana: {timezone.localtime().strftime('%d.%m.%Y')}",
+        _ascii_safe(f"Sertifikat raqami: {cert_number}  |  Berilgan sana: {issued}"),
     )
 
     p.showPage()
     p.save()
     buffer.seek(0)
+    return buffer.getvalue()
+
+
+def generate_certificate(exam_result, force=False):
+    """Imtihondan o'tganda Certificate yozuvini yaratadi."""
+    from django.core.files.base import ContentFile
+    import uuid
+
+    employee = exam_result.employee
+    exam = exam_result.exam
+
+    existing_certificate = Certificate.objects.filter(exam_result=exam_result).first()
+    if existing_certificate and not force:
+        return existing_certificate
+
+    if existing_certificate and force:
+        if existing_certificate.certificate_file:
+            existing_certificate.certificate_file.delete(save=False)
+        existing_certificate.delete()
+
+    cert_number = f"OC-{exam.id}-{employee.id}-{uuid.uuid4().hex[:6].upper()}"
+    pdf_bytes = _build_certificate_pdf(exam_result, cert_number)
 
     cert = Certificate(
         exam_result=exam_result,
         employee=employee,
         certificate_number=cert_number,
     )
-    cert.certificate_file.save(
-        f"certificate_{cert_number}.pdf",
-        ContentFile(buffer.getvalue()),
-    )
-    cert.save()
-
+    try:
+        cert.certificate_file.save(
+            f"certificate_{cert_number}.pdf",
+            ContentFile(pdf_bytes),
+        )
+    except Exception as e:
+        print(f"Sertifikat faylini Cloudinaryga saqlash shart emas: {e}")
+        cert.save()
     return cert
+
+
+def _user_can_access_cert(request, cert):
+    return (
+        request.user.is_staff
+        or request.user.is_superuser
+        or (hasattr(cert, "employee") and cert.employee.user_id == request.user.id)
+    )
+
+
+def _serve_certificate_pdf(request, pk, as_attachment=False):
+    cert = get_object_or_404(Certificate, pk=pk)
+    if not _user_can_access_cert(request, cert):
+        return redirect("dashboard")
+
+    pdf_bytes = _build_certificate_pdf(cert.exam_result, cert.certificate_number)
+    response = HttpResponse(pdf_bytes, content_type="application/pdf")
+    disp = "attachment" if as_attachment else "inline"
+    response["Content-Disposition"] = f'{disp}; filename="sertifikat_{cert.certificate_number}.pdf"'
+    return response
+
+
+@login_required
+def employee_certificates(request):
+    try:
+        employee = Employee.objects.get(user=request.user)
+    except Exception:
+        return redirect("dashboard")
+    return render(
+        request,
+        "employee/certificates.html",
+        {"certificates": Certificate.objects.filter(employee=employee).order_by("-issued_date")},
+    )
+
+
+@login_required
+def view_certificate(request, pk):
+    return _serve_certificate_pdf(request, pk, as_attachment=False)
+
+
+@login_required
+def download_certificate(request, pk):
+    return _serve_certificate_pdf(request, pk, as_attachment=True)
 
 @login_required
 def employee_certificates(request):
     try: employee = Employee.objects.get(user=request.user)
     except: return redirect('dashboard')
     return render(request, 'employee/certificates.html', {'certificates': Certificate.objects.filter(employee=employee).order_by('-issued_date')})
-
-@login_required
-def download_certificate(request, pk):
-    cert = get_object_or_404(Certificate, pk=pk, employee__user=request.user)
-    if cert.certificate_file: return FileResponse(cert.certificate_file.open('rb'), as_attachment=True, filename=f"sertifikat_{cert.certificate_number}.pdf")
-    return redirect('employee_certificates')
 
 
 # =====================================================

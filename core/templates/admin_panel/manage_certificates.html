@@ -96,7 +96,7 @@
                                         <td>{{ cert.issued_date|date:"d.m.Y" }}</td>
                                         <td>
                                             <div class="d-flex gap-2">
-                                                <a href="{{ cert.certificate_file.url }}" target="_blank" class="btn btn-sm btn-outline-primary" title="Ko'rish">
+                                                      <a href="{% url 'view_certificate' cert.pk %}" target="_blank" class="btn btn-sm btn-outline-primary" title="Ko'rish">
                                                     <i class="bi bi-eye"></i>
                                                 </a>
                                                 <a href="{% url 'download_certificate' cert.pk %}" class="btn btn-sm btn-outline-success" title="Yuklash">
