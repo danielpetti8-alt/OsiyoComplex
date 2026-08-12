@@ -55,4 +55,4 @@ urlpatterns = [
     path('employee/exams/<int:pk>/result/', views.exam_result, name='exam_result'),
     path('employee/certificates/', views.employee_certificates, name='employee_certificates'),
     path('employee/certificates/<int:pk>/download/', views.download_certificate, name='download_certificate'),
-    path('employee/certificates/<int:pk>/view/', views.view_certificate, name='view_certificate'),
+    path('employee/certificates/<int:pk>/view/', views.view_certificate, name='view_certificate'),]
