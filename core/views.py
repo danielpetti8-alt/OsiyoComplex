@@ -795,7 +795,7 @@ def submit_exam(request, pk):
     result.score = round((correct / result.total_questions) * 100, 1) if result.total_questions > 0 else 0
     result.result_status, result.finished_at = 'passed' if result.score >= exam.passing_score else 'failed', timezone.now()
     result.save()
-        if result.result_status == 'passed':
+    if result.result_status == 'passed':
         try:
             generate_certificate(result)
         except Exception as e:
